@@ -69,7 +69,7 @@ let _ghSha = null; // tracks current file sha for safe overwrite
 
 async function ghFetchData() {
   const res = await fetch(GH_API + "?t=" + Date.now(), {
-    headers: { Authorization: `Bearer ${GH_TOKEN}` },
+    headers: { Authorization: `token ${GH_TOKEN}` },
   });
   if (res.status === 404) {
     // File doesn't exist yet - create it with INITIAL_DATA
@@ -93,7 +93,7 @@ async function ghSaveData(data) {
   const res = await fetch(GH_API, {
     method: "PUT",
     headers: {
-      Authorization: `Bearer ${GH_TOKEN}`,
+      Authorization: `token ${GH_TOKEN}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
@@ -103,7 +103,7 @@ async function ghSaveData(data) {
     // If conflict (409), refetch sha and retry once
     if (res.status === 409) {
       const fresh = await fetch(GH_API + "?t=" + Date.now(), {
-        headers: { Authorization: `Bearer ${GH_TOKEN}` },
+        headers: { Authorization: `token ${GH_TOKEN}` },
       });
       const freshJson = await fresh.json();
       _ghSha = freshJson.sha;
@@ -111,7 +111,7 @@ async function ghSaveData(data) {
       const retry = await fetch(GH_API, {
         method: "PUT",
         headers: {
-          Authorization: `Bearer ${GH_TOKEN}`,
+          Authorization: `token ${GH_TOKEN}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(body),
