@@ -68,9 +68,8 @@ const GH_API = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${G
 let _ghSha = null; // tracks current file sha for safe overwrite
 
 async function ghFetchData() {
-  const res = await fetch(GH_API, {
-    headers: { Authorization: `token ${GH_TOKEN}`, Accept: "application/vnd.github+json" },
-    cache: "no-store",
+  const res = await fetch(GH_API + "?t=" + Date.now(), {
+    headers: { Authorization: `Bearer ${GH_TOKEN}` },
   });
   if (res.status === 404) {
     // File doesn't exist yet - create it with INITIAL_DATA
@@ -94,8 +93,7 @@ async function ghSaveData(data) {
   const res = await fetch(GH_API, {
     method: "PUT",
     headers: {
-      Authorization: `token ${GH_TOKEN}`,
-      Accept: "application/vnd.github+json",
+      Authorization: `Bearer ${GH_TOKEN}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
@@ -104,9 +102,8 @@ async function ghSaveData(data) {
     const errText = await res.text();
     // If conflict (409), refetch sha and retry once
     if (res.status === 409) {
-      const fresh = await fetch(GH_API, {
-        headers: { Authorization: `token ${GH_TOKEN}`, Accept: "application/vnd.github+json" },
-        cache: "no-store",
+      const fresh = await fetch(GH_API + "?t=" + Date.now(), {
+        headers: { Authorization: `Bearer ${GH_TOKEN}` },
       });
       const freshJson = await fresh.json();
       _ghSha = freshJson.sha;
@@ -114,8 +111,7 @@ async function ghSaveData(data) {
       const retry = await fetch(GH_API, {
         method: "PUT",
         headers: {
-          Authorization: `token ${GH_TOKEN}`,
-          Accept: "application/vnd.github+json",
+          Authorization: `Bearer ${GH_TOKEN}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(body),
